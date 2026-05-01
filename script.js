@@ -2,12 +2,18 @@ const menuToggle = document.querySelector("[data-menu-toggle]");
 const menuClose = document.querySelector("[data-menu-close]");
 const mobileMenu = document.querySelector("[data-mobile-menu]");
 const menuOverlay = document.querySelector("[data-menu-overlay]");
+const header = document.querySelector(".site-header");
+
+function getHeaderOffset() {
+  return header ? header.offsetHeight + 8 : 0;
+}
 
 function openMenu() {
   if (!mobileMenu || !menuOverlay) return;
   mobileMenu.classList.add("open");
   menuOverlay.classList.add("show");
   mobileMenu.setAttribute("aria-hidden", "false");
+  document.body.classList.add("menu-open");
 }
 
 function closeMenu() {
@@ -15,11 +21,20 @@ function closeMenu() {
   mobileMenu.classList.remove("open");
   menuOverlay.classList.remove("show");
   mobileMenu.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("menu-open");
 }
 
-if (menuToggle) menuToggle.addEventListener("click", openMenu);
-if (menuClose) menuClose.addEventListener("click", closeMenu);
-if (menuOverlay) menuOverlay.addEventListener("click", closeMenu);
+if (menuToggle) {
+  menuToggle.addEventListener("click", openMenu);
+}
+
+if (menuClose) {
+  menuClose.addEventListener("click", closeMenu);
+}
+
+if (menuOverlay) {
+  menuOverlay.addEventListener("click", closeMenu);
+}
 
 const navLinks = document.querySelectorAll("[data-mobile-menu] a[href]");
 
@@ -30,36 +45,36 @@ navLinks.forEach((link) => {
 
     const href = rawHref.trim();
 
-    // ✅ CASE 1: Same page (#section)
     if (href.startsWith("#")) {
       const target = document.querySelector(href);
-      if (target) {
-        event.preventDefault();
+      if (!target) {
+        closeMenu();
+        return;
+      }
 
-        const header = document.querySelector(".site-header");
-        const headerOffset = header ? header.offsetHeight + 8 : 0;
+      event.preventDefault();
+      closeMenu();
+
+      setTimeout(() => {
         const targetTop =
           target.getBoundingClientRect().top +
           window.pageYOffset -
-          headerOffset;
+          getHeaderOffset();
 
-        window.scrollTo({ top: targetTop, behavior: "smooth" });
+        window.scrollTo({
+          top: targetTop,
+          behavior: "smooth",
+        });
+
         history.replaceState(null, "", href);
-      }
-
-      closeMenu();
-    }
-
-    // ✅ CASE 2: Different page (about.html etc.)
-    else {
-      event.preventDefault(); // stop weird interruption
-
+      }, 250);
+    } else {
+      event.preventDefault();
       closeMenu();
 
-      // 🔥 Force navigation AFTER closing
       setTimeout(() => {
         window.location.href = href;
-      }, 200);
+      }, 250);
     }
   });
 });
