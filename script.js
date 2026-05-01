@@ -21,32 +21,46 @@ if (menuToggle) menuToggle.addEventListener("click", openMenu);
 if (menuClose) menuClose.addEventListener("click", closeMenu);
 if (menuOverlay) menuOverlay.addEventListener("click", closeMenu);
 
-document.querySelectorAll("[data-close-menu]").forEach((link) => {
+const navLinks = document.querySelectorAll("[data-mobile-menu] a[href]");
+
+navLinks.forEach((link) => {
   link.addEventListener("click", (event) => {
-    const href = link.getAttribute("href") || "";
-    const hasHash = href.includes("#");
+    const rawHref = link.getAttribute("href");
+    if (!rawHref) return;
 
-    if (hasHash) {
-      const hash = `#${href.split("#")[1]}`;
-      const target = document.querySelector(hash);
+    const href = rawHref.trim();
 
-      // Keep mobile navigation reliable for all section links.
+    // ✅ CASE 1: Same page (#section)
+    if (href.startsWith("#")) {
+      const target = document.querySelector(href);
       if (target) {
         event.preventDefault();
-        closeMenu();
 
         const header = document.querySelector(".site-header");
         const headerOffset = header ? header.offsetHeight + 8 : 0;
         const targetTop =
-          target.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+          target.getBoundingClientRect().top +
+          window.pageYOffset -
+          headerOffset;
 
         window.scrollTo({ top: targetTop, behavior: "smooth" });
-        history.replaceState(null, "", hash);
-        return;
+        history.replaceState(null, "", href);
       }
+
+      closeMenu();
     }
 
-    closeMenu();
+    // ✅ CASE 2: Different page (about.html etc.)
+    else {
+      event.preventDefault(); // stop weird interruption
+
+      closeMenu();
+
+      // 🔥 Force navigation AFTER closing
+      setTimeout(() => {
+        window.location.href = href;
+      }, 200);
+    }
   });
 });
 
