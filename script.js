@@ -49,17 +49,14 @@ navLinks.forEach((link) => {
       linkUrl.origin === window.location.origin &&
       linkUrl.pathname === window.location.pathname;
 
-    if (isSamePage && linkUrl.hash) {
-      const target = document.querySelector(linkUrl.hash);
-      if (!target) {
-        closeMenu();
-        return;
-      }
+    event.preventDefault();
+    closeMenu();
 
-      event.preventDefault();
-      closeMenu();
+    setTimeout(() => {
+      if (isSamePage && linkUrl.hash) {
+        const target = document.querySelector(linkUrl.hash);
+        if (!target) return;
 
-      setTimeout(() => {
         const targetTop =
           target.getBoundingClientRect().top +
           window.pageYOffset -
@@ -71,11 +68,11 @@ navLinks.forEach((link) => {
         });
 
         history.replaceState(null, "", linkUrl.hash);
-      }, 250);
-      return;
-    }
+        return;
+      }
 
-    closeMenu();
+      window.location.href = linkUrl.href;
+    }, 250);
   });
 });
 
