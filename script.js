@@ -44,18 +44,21 @@ navLinks.forEach((link) => {
     if (!rawHref) return;
 
     const href = rawHref.trim();
+    const linkUrl = new URL(href, window.location.href);
+    const isSamePage =
+      linkUrl.origin === window.location.origin &&
+      linkUrl.pathname === window.location.pathname;
 
-    if (href.startsWith("#")) {
-      const target = document.querySelector(href);
-      if (!target) {
-        closeMenu();
-        return;
-      }
-
+    if (isSamePage) {
       event.preventDefault();
-      closeMenu();
 
-      setTimeout(() => {
+      if (linkUrl.hash) {
+        const target = document.querySelector(linkUrl.hash);
+        if (!target) {
+          closeMenu();
+          return;
+        }
+
         const targetTop =
           target.getBoundingClientRect().top +
           window.pageYOffset -
@@ -66,16 +69,18 @@ navLinks.forEach((link) => {
           behavior: "smooth",
         });
 
-        history.replaceState(null, "", href);
-      }, 250);
-    } else {
-      event.preventDefault();
-      closeMenu();
+        history.replaceState(null, "", linkUrl.hash);
+        setTimeout(closeMenu, 250);
+        return;
+      }
 
-      setTimeout(() => {
-        window.location.href = href;
-      }, 250);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      history.replaceState(null, "", linkUrl.pathname);
+      setTimeout(closeMenu, 250);
+      return;
     }
+
+    closeMenu();
   });
 });
 
