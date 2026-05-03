@@ -44,9 +44,13 @@ navLinks.forEach((link) => {
     if (!rawHref) return;
 
     const href = rawHref.trim();
+    const linkUrl = new URL(href, window.location.href);
+    const isSamePage =
+      linkUrl.origin === window.location.origin &&
+      linkUrl.pathname === window.location.pathname;
 
-    if (href.startsWith("#")) {
-      const target = document.querySelector(href);
+    if (isSamePage && linkUrl.hash) {
+      const target = document.querySelector(linkUrl.hash);
       if (!target) {
         closeMenu();
         return;
@@ -66,16 +70,12 @@ navLinks.forEach((link) => {
           behavior: "smooth",
         });
 
-        history.replaceState(null, "", href);
+        history.replaceState(null, "", linkUrl.hash);
       }, 250);
-    } else {
-      event.preventDefault();
-      closeMenu();
-
-      setTimeout(() => {
-        window.location.href = href;
-      }, 250);
+      return;
     }
+
+    closeMenu();
   });
 });
 
