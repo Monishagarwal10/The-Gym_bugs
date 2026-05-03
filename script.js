@@ -49,13 +49,15 @@ navLinks.forEach((link) => {
       linkUrl.origin === window.location.origin &&
       linkUrl.pathname === window.location.pathname;
 
-    event.preventDefault();
-    closeMenu();
+    if (isSamePage) {
+      event.preventDefault();
 
-    setTimeout(() => {
-      if (isSamePage && linkUrl.hash) {
+      if (linkUrl.hash) {
         const target = document.querySelector(linkUrl.hash);
-        if (!target) return;
+        if (!target) {
+          closeMenu();
+          return;
+        }
 
         const targetTop =
           target.getBoundingClientRect().top +
@@ -68,11 +70,17 @@ navLinks.forEach((link) => {
         });
 
         history.replaceState(null, "", linkUrl.hash);
+        setTimeout(closeMenu, 250);
         return;
       }
 
-      window.location.href = linkUrl.href;
-    }, 250);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      history.replaceState(null, "", linkUrl.pathname);
+      setTimeout(closeMenu, 250);
+      return;
+    }
+
+    closeMenu();
   });
 });
 
